@@ -2,7 +2,24 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List
 
+from starlette.middleware.cors import CORSMiddleware
+
 app = FastAPI()
+
+origins = [
+    "http://localhost:5173",
+    "http://localhost:5173/ebook",
+    "https://aitishnitsa.github.io",
+    "https://aitishnitsa.github.io/ebook",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class User(BaseModel):
     id: int
