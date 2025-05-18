@@ -109,3 +109,7 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
     db.delete(user)
     db.commit()
     return {"message": f"User with id {user_id} deleted"}
+
+@app.get("/users/count")
+def count_users(db: Session = Depends(get_db)):
+    return {"count": db.query(UserDB).count()}
