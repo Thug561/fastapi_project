@@ -17,27 +17,10 @@ Base = declarative_base()
 class UserDB(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, index=True)
-    email = Column(String, unique=True, index=True)
+    username = Column(String)
+    email = Column(String)
 
 Base.metadata.create_all(bind=engine)
-
-def init_db():
-    db = SessionLocal()
-    try:
-        if db.query(UserDB).count() == 0:
-            initial_users = [
-                UserDB(id=1, username="Dima Loadin...", email="test1@example.com"),
-                UserDB(id=2, username="Vitaliy Jsonc", email="test2@example.com"),
-                UserDB(id=3, username="Vertex Queen", email="test3@example.com"),
-            ]
-            db.add_all(initial_users)
-            db.commit()
-    finally:
-        db.close()
-
-Base.metadata.create_all(bind=engine)
-init_db()
 
 class User(BaseModel):
     id: int
@@ -75,12 +58,10 @@ def get_db():
 def read_root():
     return {"message": "Welcome to FastAPI on Render!"}
 
+
 @app.post("/users", response_model=User)
 def create_user(user: User, db: Session = Depends(get_db)):
-    db_user = db.query(UserDB).filter(UserDB.id == user.id).first()
-    if db_user:
-        raise HTTPException(status_code=400, detail="User with this ID already exists")
-    new_user = UserDB(id=user.id, username=user.username, email=user.email)
+    new_user = UserDB(username=user.username, email=user.email)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
