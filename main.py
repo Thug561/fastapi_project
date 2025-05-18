@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List
+from fastapi import HTTPException
 
 from starlette.middleware.cors import CORSMiddleware
 
@@ -44,3 +45,19 @@ def create_user(user: User):
 @app.get("/users", response_model=List[User])
 def get_users():
     return users_db
+
+@app.put("/users/{user_id}", response_model=User)
+def update_user(user_id: int, updated_user: User):
+    for index, user in enumerate(users_db):
+        if user.id == user_id:
+            users_db[index] = updated_user
+            return updated_user
+    raise HTTPException(status_code=404, detail="User not found")
+
+@app.delete("/users/{user_id}")
+def delete_user(user_id: int):
+    for index, user in enumerate(users_db):
+        if user.id == user_id:
+            users_db.pop(index)
+            return {"message": f"User with id {user_id} deleted"}
+    raise HTTPException(status_code=404, detail="User not found")
