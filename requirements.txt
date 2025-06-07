@@ -2,3 +2,7 @@ fastapi
 SQLAlchemy
 uvicorn[standard]
 psycopg2-binary
+python-jose[cryptography]
+passlib[bcrypt]
+python-dotenv
+email-validator
