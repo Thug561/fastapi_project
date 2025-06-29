@@ -1,11 +1,30 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from database.models import UserDB
-from schemas.user import User, UserCreate
+from schemas.user import User, UserCreate, UserUpdate
 from core.security import hash_password
 from api.deps import get_db, get_current_user
 
 router = APIRouter()
+
+@router.put("/me", response_model=User)
+async def update_current_user(
+    update: UserUpdate,
+    db: Session = Depends(get_db),
+    current_user: UserDB = Depends(get_current_user)
+):
+    if update.username and update.username != current_user.username:
+        existing_user = db.query(UserDB).filter(UserDB.username == update.username).first()
+        if existing_user:
+            raise HTTPException(status_code=400, detail="Username already taken")
+        current_user.username = update.username
+
+    if update.password:
+        current_user.hashed_password = hash_password(update.password)
+
+    db.commit()
+    db.refresh(current_user)
+    return current_user
 
 @router.post("/register", response_model=User, status_code=status.HTTP_201_CREATED)
 def register(user: UserCreate, db: Session = Depends(get_db)):
