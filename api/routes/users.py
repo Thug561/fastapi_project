@@ -29,3 +29,27 @@ async def read_users_me(current_user: UserDB = Depends(get_current_user)):
 @router.get("/users", response_model=list[User])
 def get_users(db: Session = Depends(get_db)):
     return db.query(UserDB).all()
+
+@router.delete("/users/{user_id}")
+def delete_user(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(UserDB).filter(UserDB.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    db.delete(user)
+    db.commit()
+    return {"message": f"User with id {user_id} deleted"}
+
+@router.get("/users/count")
+def count_users(db: Session = Depends(get_db)):
+    return {"count": db.query(UserDB).count()}
+
+@router.put("/users/{user_id}", response_model=User)
+def update_user(user_id: int, updated_user: User, db: Session = Depends(get_db)):
+    user = db.query(UserDB).filter(UserDB.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    user.username = updated_user.username
+    user.email = updated_user.email
+    db.commit()
+    db.refresh(user)
+    return user
