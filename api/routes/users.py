@@ -9,18 +9,16 @@ router = APIRouter()
 
 @router.put("/me", response_model=User)
 async def update_current_user(
-    update: UserUpdate,
-    db: Session = Depends(get_db),
-    current_user: UserDB = Depends(get_current_user)
+        user_update: UserUpdate,
+        db: Session = Depends(get_db),
+        current_user: UserDB = Depends(get_current_user)
 ):
-    if update.username and update.username != current_user.username:
-        existing_user = db.query(UserDB).filter(UserDB.username == update.username).first()
-        if existing_user:
-            raise HTTPException(status_code=400, detail="Username already taken")
-        current_user.username = update.username
+    if user_update.username:
+        current_user.username = user_update.username
 
-    if update.password:
-        current_user.hashed_password = hash_password(update.password)
+    if user_update.password:
+        hashed_pwd = hash_password(user_update.password)
+        current_user.hashed_password = hashed_pwd
 
     db.commit()
     db.refresh(current_user)
