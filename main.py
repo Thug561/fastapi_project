@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from core.config import origins
-from api.routes import auth, users
+from api.routes import auth, users, friends
 from database.session import Base, engine
 
 Base.metadata.create_all(bind=engine)
@@ -18,6 +18,7 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(users.router)
+app.include_router(friends.router)
 
 @app.get("/")
 def root():
