@@ -3,14 +3,28 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from schemas.friends import FriendRequestCreate, FriendRequestResponse, FriendRequestStatus
-from crud.friend_requests import send_friend_request, respond_to_friend_request, get_pending_requests, get_friends
+from crud.friend_requests import send_friend_request, respond_to_friend_request, get_pending_requests, get_friends, remove_friend
 from api.deps import get_db, get_current_user
 from database.models import UserDB, FriendRequest
 
 router = APIRouter(prefix="/friends", tags=["friends"])
 
 @router.post("/request", response_model=FriendRequestResponse)
-def create_friend_request(request: FriendRequestCreate, db: Session = Depends(get_db), current_user: UserDB = Depends(get_current_user)):
+@router.delete("/{friend_id}")
+def delete_friend(
+    friend_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserDB = Depends(get_current_user)
+):
+    success = remove_friend(db, current_user.id, friend_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Friend not found")
+    return {"detail": f"Friendship with user {friend_id} removed"}
+
+def create_friend_request(
+        request: FriendRequestCreate,
+        db: Session = Depends(get_db),
+        current_user: UserDB = Depends(get_current_user)):
     if request.to_user_id == current_user.id:
         raise HTTPException(status_code=400, detail="Cannot send friend request to yourself")
     friend_request = send_friend_request(db, current_user.id, request.to_user_id)

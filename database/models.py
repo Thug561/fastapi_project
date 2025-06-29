@@ -21,7 +21,7 @@ class FriendRequest(Base):
     id = Column(Integer, primary_key=True, index=True)
     from_user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     to_user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
-    status = Column(Enum(FriendRequestStatus), default=FriendRequestStatus.pending, nullable=False)
+    status = Column(Enum(FriendRequestStatus), default=FriendRequestStatus.pending)
 
     from_user = relationship("UserDB", foreign_keys=[from_user_id])
     to_user = relationship("UserDB", foreign_keys=[to_user_id])

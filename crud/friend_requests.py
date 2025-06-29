@@ -41,3 +41,17 @@ def get_friends(db: Session, user_id: int):
         (FriendRequest.status == FriendRequestStatus.accepted)
     ).all()
     return accepted
+
+
+def remove_friend(db: Session, user_id: int, friend_id: int):
+    friendship = db.query(FriendRequest).filter(
+        ((FriendRequest.from_user_id == user_id) & (FriendRequest.to_user_id == friend_id)) |
+        ((FriendRequest.from_user_id == friend_id) & (FriendRequest.to_user_id == user_id)),
+        FriendRequest.status == FriendRequestStatus.accepted
+    ).first()
+    if not friendship:
+        return None
+
+    db.delete(friendship)
+    db.commit()
+    return True
